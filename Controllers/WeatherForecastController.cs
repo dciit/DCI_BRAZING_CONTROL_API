@@ -1,6 +1,7 @@
 using BrazingControlAPI.Contexts;
 using BrazingControlAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Globalization;
 
 namespace BrazingControlAPI.Controllers
@@ -30,67 +31,89 @@ namespace BrazingControlAPI.Controllers
         [Route("/brazing/user/{lineControl}")]
         public IActionResult GetBrzingUser(string lineControl)
         {
+            var res = GetBrazingControl(lineControl);
+
+
+            //var res = (from tr in _contextDCI.TrTraineeData.ToList().DefaultIfEmpty()
+            //           join course in content
+            //           on tr.ScheduleCode equals course.schedule.ScheduleCode.ToString()
+            //           join emp in _contextDCI.Employees
+            //            on tr.Empcode.Trim() equals emp.Code.Trim()
+            //           where emp.Resign == dateOnly && tr.ScheduleCode != "" && (tr.Expire >= new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0) || tr.Expire == null)
+            //           select new
+            //           {
+            //               course.CourseCode,
+            //               course.CourseName,
+            //               course.schedule.ScheduleCode,
+            //               scheduleStart = new DateTime(course.schedule.ScheduleStart.Value.Year, course.schedule.ScheduleStart.Value.Month, course.schedule.ScheduleStart.Value.Day, course.schedule.ScheduleStart.Value.Hour, course.schedule.ScheduleStart.Value.Minute, course.schedule.ScheduleStart.Value.Second).ToString("dd/MM/yyyy HH:mm"),
+            //               scheduleEnd = new DateTime(course.schedule.ScheduleEnd.Value.Year, course.schedule.ScheduleEnd.Value.Month, course.schedule.ScheduleEnd.Value.Day, course.schedule.ScheduleEnd.Value.Hour, course.schedule.ScheduleEnd.Value.Minute, course.schedule.ScheduleStart.Value.Second).ToString("dd/MM/yyyy HH:mm"),
+            //               empcode = tr.Empcode.Trim(),
+            //               expire = tr.Expire != null ? new DateTime(tr.Expire.Value.Year, tr.Expire.Value.Month, tr.Expire.Value.Day, tr.Expire.Value.Hour, tr.Expire.Value.Minute, course.schedule.ScheduleStart.Value.Second).ToString() : "-",
+            //               fullname = $"{emp.Name}  {emp.Surn}",
+            //               trainer = course.schedule.Trainer
+
+            //           }).OrderBy(x => x.ScheduleCode).ToList();
+            return Ok(res);
+        }
+
+        private object GetBrazingControl(string lineControl = "")
+        {
             var content = (from course in _contextDCI.TrCourses
                            where course.ExpireStatus == true
                            select new
                            {
+                               course.Id,
                                course.CourseCode,
-                               course.CourseName,
-                               schedule = _contextDCI.TrSchedules.Where(x => x.CourseId == course.Id.ToString() && x.Status == "ACTIVE").OrderByDescending(x => x.ScheduleStart).FirstOrDefault()
+                               course.CourseName
                            }).ToList();
             if (lineControl != "" && lineControl != "-")
             {
                 content = content.Where(x => x.CourseCode == lineControl).ToList();
             }
-            DateTime dateOnly = new DateTime(1900,01,01,00,00,0);
-            var res = (from tr in _contextDCI.TrTraineeData.ToList()
-                       join course in content
-                       on tr.ScheduleCode equals course.schedule.ScheduleCode.ToString()
-                       join emp in _contextDCI.Employees
-                       on tr.Empcode.Trim() equals emp.Code.Trim()
-                       where emp.Resign == dateOnly
+            DateTime dateOnly = new DateTime(1900, 01, 01, 00, 00, 0);
+            DateTime dt = DateTime.Now;
+
+            var EmpIsNull = _contextDCI.TrTraineeData.Where(x => x.Expire == null && x.CourseCode != "" && x.ScheduleCode != "").ToList();
+            foreach (var ItemEmp in EmpIsNull)
+            {
+                var dateTraining = _contextDCI.TrSchedules.FirstOrDefault(x => x.ScheduleCode.ToString() == ItemEmp.ScheduleCode);
+                if (dateTraining != null)
+                {
+                    var cloneItemExp = ItemEmp;
+                    cloneItemExp.Expire = dateTraining.ScheduleStart.Value.AddYears(1);
+                    _contextDCI.TrTraineeData.Update(cloneItemExp);
+                }
+            }
+            int update = _contextDCI.SaveChanges();
+
+            var emp = (from employee in _contextDCI.Employees.Where(x => x.Resign == dateOnly).ToList()
                        select new
                        {
-                           course.CourseCode,
-                           course.CourseName,
-                           course.schedule.ScheduleCode,
-                           scheduleStart = new DateTime(course.schedule.ScheduleStart.Value.Year, course.schedule.ScheduleStart.Value.Month, course.schedule.ScheduleStart.Value.Day, course.schedule.ScheduleStart.Value.Hour, course.schedule.ScheduleStart.Value.Minute, course.schedule.ScheduleStart.Value.Second).ToString("dd/MM/yyyy HH:mm"),
-                           scheduleEnd = new DateTime(course.schedule.ScheduleEnd.Value.Year, course.schedule.ScheduleEnd.Value.Month, course.schedule.ScheduleEnd.Value.Day, course.schedule.ScheduleEnd.Value.Hour, course.schedule.ScheduleEnd.Value.Minute, course.schedule.ScheduleStart.Value.Second).ToString("dd/MM/yyyy HH:mm"),
-                           empcode = tr.Empcode.Trim(),
-                           expire = tr.Expire != null ? new DateTime(tr.Expire.Value.Year, tr.Expire.Value.Month, tr.Expire.Value.Day, tr.Expire.Value.Hour, tr.Expire.Value.Minute, course.schedule.ScheduleStart.Value.Second).ToString() :"-",
-                           fullname = $"{emp.Name}  {emp.Surn}",
-                           trainer = course.schedule.Trainer
-
-                       }).OrderBy(x => x.ScheduleCode).ToList();
-
-
-
-            //var content = (from course in _contextDCI.TrCourses.DefaultIfEmpty()
-            //                          join trainee in _contextDCI.TrTraineeData
-            //                          on course.CourseCode equals trainee.CourseCode
-            //                          where course.ExpireStatus == true
-            //                          select new
-            //                          {
-            //                              course.CourseCode,
-            //                              course.CourseName,
-            //                              course.CourseNameEn,
-            //                              trainee.ScheduleCode,
-            //                              trainee.Expire,
-            //                              empCode = trainee.Empcode.Trim() ?? ""
-            //                          }).ToList().GroupBy(x => x.ScheduleCode).ToList();
-
-            //join emp in _contextHRM.Employees
-            //on tr equals emp.Code
-            //select new
-            //{
-            //    tr.CourseCode,
-            //    tr.CourseName,
-            //    tr.CourseNameEn,
-            //    tr.empCode,
-            //    fullName = $"{emp.Name} {emp.Surn}",
-            //    tr.Expire
-            //};
-            return Ok(res);
+                           employee.Code,
+                           employee.Resign,
+                           fullname = employee.Name + "." + employee.Surn.Substring(0, 1)
+                       }).ToList();
+            var res = (
+                from course in content.DefaultIfEmpty()
+                join schedule in _contextDCI.TrSchedules.Where(s => s.Status == "ACTIVE" && s.ScheduleEnd.Value.AddYears(1) >= dt).ToList()
+                on course.Id.ToString() equals schedule.CourseId
+                join tr in _contextDCI.TrTraineeData.Where(e => e.CourseCode != null && e.ScheduleCode != null && e.Expire != null).ToList()
+                on schedule.ScheduleCode.ToString() equals tr.ScheduleCode
+                where tr.ScheduleCode != "" && (tr.Expire >= new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0) || tr.Expire == null)
+                select new
+                {
+                    course.CourseCode,
+                    course.CourseName,
+                    schedule.ScheduleCode,
+                    ScheduleEnd = schedule.ScheduleEnd.Value.AddYears(1),
+                    tr.Empcode,
+                    fullname = (emp.FirstOrDefault(x => x.Code == tr.Empcode.Trim()) != null ? emp.FirstOrDefault(x => x.Code == tr.Empcode.Trim()).fullname : "-"),
+                    trainer = (schedule.Trainer != "" && schedule.Trainer != null) ? schedule.Trainer : "-",
+                    expire = new DateTime(tr.Expire.Value.Year, tr.Expire.Value.Month, tr.Expire.Value.Day, tr.Expire.Value.Hour, tr.Expire.Value.Minute, 0).ToString(),
+                    scheduleStart = new DateTime(schedule.ScheduleStart.Value.Year, schedule.ScheduleStart.Value.Month, schedule.ScheduleStart.Value.Day, schedule.ScheduleStart.Value.Hour, schedule.ScheduleStart.Value.Minute, schedule.ScheduleStart.Value.Second).ToString("dd/MM/yyyy HH:mm")
+                }
+                ).Where(x => x.fullname != "-").OrderBy(x => x.ScheduleCode).ToList();
+            return res;
         }
 
         [HttpGet]
@@ -105,47 +128,108 @@ namespace BrazingControlAPI.Controllers
         public IActionResult GetUserOfLicense()
         {
             //var content = _contextSCM.SkcDictMstrs.Where(x => x.DictType == "LICENSE_LINE_CONTROL").OrderBy(x => x.RefCode).ToList();
-            var contentCourse = _contextDCI.TrCourses.Where(x => x.ExpireStatus == true).ToList();
-            var courseJoinSchedule = (from course in contentCourse
-                                      select new
-                                      {
-                                          course.Id,
-                                          course.CourseCode,
-                                          course.CourseName,
-                                          schedule = _contextDCI.TrSchedules.Where(x => x.Status == "ACTIVE" && x.CourseId == course.Id.ToString()).OrderByDescending(x => x.ScheduleStart).FirstOrDefault()
-                                      }).ToList();
-            var contentTrainee = (from trainee in _contextDCI.TrTraineeData.ToList()
-                                  join course in courseJoinSchedule
-                                  on trainee.ScheduleCode equals course.schedule.ScheduleCode.ToString()
-                                  where trainee.CourseCode == course.CourseCode
-                                  select new
-                                  {
-                                      empcode = trainee.Empcode.Trim(),
-                                      course.CourseCode
-                                  }).ToList();
-            var users = contentTrainee.GroupBy(x => x.empcode).ToList();
-            var courseList = _contextSCM.SkcDictMstrs.Where(x => x.DictType == "LICENSE_LINE_CONTROL").OrderBy(x => x.RefCode).ToList();
-            var employee = _contextDCI.Employees.Where(x => x.Resign == DateTime.ParseExact("1900-01-01", "yyyy-MM-dd", null)).ToList();
+            //var contentCourse = _contextDCI.TrCourses.Where(x => x.ExpireStatus == true).ToList();
+            //var courseJoinSchedule = (from course in contentCourse.DefaultIfEmpty()
+            //                          select new
+            //                          {
+            //                              course.Id,
+            //                              course.CourseCode,
+            //                              course.CourseName,
+            //                              schedule = _contextDCI.TrSchedules.Where(x => x.Status == "ACTIVE" && x.CourseId == course.Id.ToString()).OrderByDescending(x => x.ScheduleStart).FirstOrDefault()
+            //                          }).ToList();
+
+
+
+            //DateTime dateOnly = new DateTime(1900, 01, 01, 00, 00, 0);
+            //DateTime dt = DateTime.Now;
+
+
+            //var contentTrainee = (from tr in _contextDCI.TrTraineeData.ToList()
+            //                      join course in contentCourse
+            //                      on tr.ScheduleCode equals course.CourseCode
+            //                      where tr.CourseCode == course.CourseCode
+            //                      select new
+            //                      {
+            //                          empcode = tr.Empcode.Trim(),
+            //                          course.CourseCode
+            //                      }).ToList();
+
+            //var users = contentTrainee.GroupBy(x => x.empcode).ToList();
+            
+            //var employee = _contextDCI.Employees.Where(x => x.Resign == DateTime.ParseExact("1900-01-01", "yyyy-MM-dd", null)).ToList();
+            var content = (from course in _contextDCI.TrCourses
+                           where course.ExpireStatus == true
+                           select new
+                           {
+                               course.Id,
+                               course.CourseCode,
+                               course.CourseName
+                           }).ToList();
+            DateTime dateOnly = new DateTime(1900, 01, 01, 00, 00, 0);
+            DateTime dt = DateTime.Now;
+
+            var EmpIsNull = _contextDCI.TrTraineeData.Where(x => x.Expire == null && x.CourseCode != "" && x.ScheduleCode != "").ToList();
+            foreach (var ItemEmp in EmpIsNull)
+            {
+                var dateTraining = _contextDCI.TrSchedules.FirstOrDefault(x => x.ScheduleCode.ToString() == ItemEmp.ScheduleCode);
+                if (dateTraining != null)
+                {
+                    var cloneItemExp = ItemEmp;
+                    cloneItemExp.Expire = dateTraining.ScheduleStart.Value.AddYears(1);
+                    _contextDCI.TrTraineeData.Update(cloneItemExp);
+                }
+            }
+            int update = _contextDCI.SaveChanges();
+
+            var emp = (from employee in _contextDCI.Employees.Where(x => x.Resign == dateOnly).ToList()
+                       select new
+                       {
+                           employee.Code,
+                           employee.Resign,
+                           fullname = employee.Name + "." + employee.Surn.Substring(0, 1)
+                       }).ToList();
+            var data = (
+                from course in content.DefaultIfEmpty()
+                join schedule in _contextDCI.TrSchedules.Where(s => s.Status == "ACTIVE" && s.ScheduleEnd.Value.AddYears(1) >= dt).ToList()
+                on course.Id.ToString() equals schedule.CourseId
+                join tr in _contextDCI.TrTraineeData.Where(e => e.CourseCode != null && e.ScheduleCode != null && e.Expire != null).ToList()
+                on schedule.ScheduleCode.ToString() equals tr.ScheduleCode
+                where tr.ScheduleCode != "" && (tr.Expire >= new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0) || tr.Expire == null)
+                select new
+                {
+                    course.CourseCode,
+                    course.CourseName,
+                    schedule.ScheduleCode,
+                    ScheduleEnd = schedule.ScheduleEnd.Value.AddYears(1),
+                    tr.Empcode,
+                    fullname = (emp.FirstOrDefault(x => x.Code == tr.Empcode.Trim()) != null ? emp.FirstOrDefault(x => x.Code == tr.Empcode.Trim()).fullname : "-"),
+                    trainer = (schedule.Trainer != "" && schedule.Trainer != null) ? schedule.Trainer : "-",
+                    expire = new DateTime(tr.Expire.Value.Year, tr.Expire.Value.Month, tr.Expire.Value.Day, tr.Expire.Value.Hour, tr.Expire.Value.Minute, 0).ToString(),
+                    scheduleStart = new DateTime(schedule.ScheduleStart.Value.Year, schedule.ScheduleStart.Value.Month, schedule.ScheduleStart.Value.Day, schedule.ScheduleStart.Value.Hour, schedule.ScheduleStart.Value.Minute, schedule.ScheduleStart.Value.Second).ToString("dd/MM/yyyy HH:mm")
+                }
+                ).Where(x => x.fullname != "-").OrderBy(x => x.ScheduleCode).ToList();
             List<MUserMatrix> res = new List<MUserMatrix>();
             int i = 1;
-            foreach (var user in users)
+            var gr = data.GroupBy(x => x.Empcode);
+            var courseList = _contextSCM.SkcDictMstrs.Where(x => x.DictType == "LICENSE_LINE_CONTROL").OrderBy(x => x.RefCode).ToList();
+            foreach (var user in gr)
             {
                 var courseOfUser = new Dictionary<string, bool>();
                 foreach (var course in courseList)
                 {
-                    var everTrainee = contentTrainee.FirstOrDefault(x => x.empcode == user.Key && x.CourseCode == course.Code);
+                    var everTrainee = data.FirstOrDefault(x => x.Empcode == user.Key && x.CourseCode == course.Code);
                     if (!courseOfUser.ContainsKey(course.Code) && everTrainee != null)
                     {
                         courseOfUser.Add(course.Code, true);
                     }
                 }
-                var emp = employee.Where(x => x.Code == user.Key).FirstOrDefault();
+                var tr = emp.Where(x => x.Code == user.Key.Trim()).FirstOrDefault();
                 MUserMatrix item = new MUserMatrix();
                 item.index = i;
                 item.empcode = user.Key;
                 item.type = (user.Key.Substring(0, 1) == "I" || user.Key.Substring(0, 1) == "i") ? "Subcontract" : "DCI";
                 item.course = courseOfUser;
-                item.fullName = $"{emp.Name} {emp.Surn}";
+                item.fullName = $"{tr.fullname}";
                 res.Add(item);
                 i++;
             }
