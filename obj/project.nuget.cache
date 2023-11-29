@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "jtX8Xrt2yohOkZgo2hftyuieFOjK933BzW6u2z3hsXcvjpmz62VpHHnS6fSFDescZnrlNVL+2JeuCD9gBBBU6g==",
+  "dgSpecHash": "LZwSFpf+pIZiyRPUMkfwgMtMRPGS3Ucnkn0Z+g87dZ+0HyWmNw9jUIgLDP0YbGFuPrTGVFOGTSbWIlZ41EZZUQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\peerapong.k.ITNB17_41256\\source\\repos\\BrazingControlAPI\\BrazingControlAPI\\BrazingControlAPI.csproj",
+  "projectFilePath": "D:\\git\\DCI_BRAZING_CONTROL_API\\BrazingControlAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\peerapong.k.ITNB17_41256\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
     "C:\\Users\\peerapong.k.ITNB17_41256\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
@@ -50,7 +50,11 @@
     "C:\\Users\\peerapong.k.ITNB17_41256\\.nuget\\packages\\system.security.permissions\\4.7.0\\system.security.permissions.4.7.0.nupkg.sha512",
     "C:\\Users\\peerapong.k.ITNB17_41256\\.nuget\\packages\\system.security.principal.windows\\4.7.0\\system.security.principal.windows.4.7.0.nupkg.sha512",
     "C:\\Users\\peerapong.k.ITNB17_41256\\.nuget\\packages\\system.text.encoding.codepages\\4.7.0\\system.text.encoding.codepages.4.7.0.nupkg.sha512",
-    "C:\\Users\\peerapong.k.ITNB17_41256\\.nuget\\packages\\system.windows.extensions\\4.7.0\\system.windows.extensions.4.7.0.nupkg.sha512"
+    "C:\\Users\\peerapong.k.ITNB17_41256\\.nuget\\packages\\system.windows.extensions\\4.7.0\\system.windows.extensions.4.7.0.nupkg.sha512",
+    "C:\\Users\\peerapong.k.ITNB17_41256\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.25\\microsoft.windowsdesktop.app.ref.6.0.25.nupkg.sha512",
+    "C:\\Users\\peerapong.k.ITNB17_41256\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.25\\microsoft.netcore.app.ref.6.0.25.nupkg.sha512",
+    "C:\\Users\\peerapong.k.ITNB17_41256\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.25\\microsoft.aspnetcore.app.ref.6.0.25.nupkg.sha512",
+    "C:\\Users\\peerapong.k.ITNB17_41256\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\6.0.25\\microsoft.netcore.app.host.win-x64.6.0.25.nupkg.sha512"
   ],
   "logs": []
 }
