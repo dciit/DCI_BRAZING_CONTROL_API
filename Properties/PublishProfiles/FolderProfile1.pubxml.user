@@ -5,7 +5,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 <Project>
   <PropertyGroup>
     <_PublishTargetUrl>D:\git\DCI_BRAZING_CONTROL_API\bin\Release\net6.0\publish\</_PublishTargetUrl>
-    <History>True|2023-11-28T07:00:47.4582351Z;</History>
+    <History>True|2024-01-23T03:49:40.2179720Z;True|2024-01-23T10:47:34.9156499+07:00;True|2023-11-30T10:33:22.1625653+07:00;True|2023-11-28T14:00:47.4582351+07:00;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>

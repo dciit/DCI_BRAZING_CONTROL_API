@@ -120,7 +120,18 @@ namespace BrazingControlAPI.Controllers
         [Route("/brazing/matrix/column")]
         public IActionResult GetColumnMatrix()
         {
-            var content = _contextSCM.SkcDictMstrs.Where(x => x.DictType == "LICENSE_LINE_CONTROL").OrderBy(x => x.RefCode).ToList();
+            var content = _contextSCM.SkcDictMstrs.Where(x => x.DictType == "LICENSE_LINE_CONTROL").Select(x => new
+            {
+                x.DictId,
+                x.Code,
+                x.CreateDate,
+                x.DictType,
+                x.RefItem,
+                DictDesc = Convert.ToInt32(x.DictDesc),
+                x.UpdateDate,
+                x.Note,
+                x.DictStatus,
+            }).OrderBy(x => x.DictDesc).ToList();
             return Ok(content);
         }
         [HttpGet]
@@ -155,7 +166,7 @@ namespace BrazingControlAPI.Controllers
             //                      }).ToList();
 
             //var users = contentTrainee.GroupBy(x => x.empcode).ToList();
-            
+
             //var employee = _contextDCI.Employees.Where(x => x.Resign == DateTime.ParseExact("1900-01-01", "yyyy-MM-dd", null)).ToList();
             var content = (from course in _contextDCI.TrCourses
                            where course.ExpireStatus == true
